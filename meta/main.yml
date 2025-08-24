@@ -1,0 +1,29 @@
+galaxy_info:
+  author: cassiopelka
+  description: An Ansible role to install and configure a MinIO cluster.
+  company: Your Company
+  license: MIT
+  min_ansible_version: "2.9"
+  namespace: cassiopelka
+  role_name: minio_cluster
+
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+    - name: Debian
+      versions:
+        - bullseye
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+
+  galaxy_tags:
+    - minio
+    - s3
+    - storage
+    - cluster
+
+dependencies: []

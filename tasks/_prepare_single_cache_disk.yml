@@ -1,0 +1,21 @@
+---
+- name: "Форматирование кэш-диска {{ cache_disk_device }} в XFS"
+  community.general.filesystem:
+    fstype: xfs
+    dev: "{{ cache_disk_device }}"
+    force: no
+
+- name: "Создание точки монтирования для кэша {{ cache_path }}"
+  ansible.builtin.file:
+    path: "{{ cache_path }}"
+    state: directory
+    owner: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    mode: "0755"
+
+- name: "Монтирование кэш-диска {{ cache_disk_device }} в {{ cache_path }}"
+  ansible.posix.mount:
+    path: "{{ cache_path }}"
+    src: "{{ cache_disk_device }}"
+    fstype: xfs
+    state: mounted

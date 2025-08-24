@@ -1,0 +1,15 @@
+---
+- name: "BLOCK | 1. Install MinIO"
+  ansible.builtin.include_tasks: 01_install.yml
+
+- name: "BLOCK | 2. Configure MinIO"
+  ansible.builtin.include_tasks: 02_configure.yml
+
+- name: "BLOCK | 3. Setup Systemd Service"
+  ansible.builtin.include_tasks: 03_service.yml
+
+- name: "BLOCK | 4. Configure Firewall"
+  ansible.builtin.include_tasks: 04_firewall.yml
+
+- name: Flush handlers to apply changes
+  ansible.builtin.meta: flush_handlers

@@ -1,0 +1,47 @@
+---
+- name: Create MinIO data directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    mode: "0755"
+  loop: "{{ minio_data_paths }}"
+
+- name: Create MinIO config directory for TLS
+  ansible.builtin.file:
+    path: "{{ minio_tls_cert_dir }}"
+    state: directory
+    owner: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    mode: "0750"
+  when: minio_tls_enabled
+
+- name: Copy TLS certificate
+  ansible.builtin.copy:
+    src: "{{ minio_tls_cert_file }}"
+    dest: "{{ minio_tls_cert_dir }}/public.crt"
+    owner: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    mode: "0640"
+  when: minio_tls_enabled
+  notify: Restart MinIO
+
+- name: Copy TLS key
+  ansible.builtin.copy:
+    src: "{{ minio_tls_key_file }}"
+    dest: "{{ minio_tls_cert_dir }}/private.key"
+    owner: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    mode: "0600"
+  when: minio_tls_enabled
+  notify: Restart MinIO
+
+- name: Create MinIO environment file from template
+  ansible.builtin.template:
+    src: minio.conf.j2
+    dest: "{{ minio_config_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart MinIO

@@ -1,0 +1,24 @@
+---
+- name: Проверка текущего статуса синхронизации времени
+  ansible.builtin.command: chronyc tracking
+  register: initial_tracking_status
+  changed_when: false
+  failed_when: false # Не падать, если chrony еще не установлен
+
+- name: Установка chrony и перезагрузка для синхронизации времени (если необходимо)
+  block:
+    - name: Установка chrony
+      ansible.builtin.package:
+        name: chrony
+        state: present
+
+    - name: Включение службы chrony для запуска при загрузке
+      ansible.builtin.service:
+        name: "{{ 'chrony' if ansible_os_family == 'Debian' else 'chronyd' }}"
+        enabled: true
+
+    - name: Перезагрузка хоста для применения синхронизации времени
+      ansible.builtin.reboot:
+        msg: "Перезагрузка для синхронизации времени с chrony"
+        reboot_timeout: 600 # Ждать до 10 минут
+        post_reboot_delay: 20 # Пауза в 20 секунд после перезагрузки

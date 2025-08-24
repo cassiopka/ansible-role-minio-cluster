@@ -1,0 +1,13 @@
+---
+- name: Проверка работоспособности кластера MinIO (ожидание статуса 200 OK)
+  ansible.builtin.uri:
+    url: "{{ 'https' if minio_tls_enabled | default(false) else 'http' }}://localhost:{{ minio_api_port }}/minio/health/cluster"
+    method: GET
+    status_code: 200
+    validate_certs: false
+  register: health_check_result
+  until: health_check_result is not failed
+  retries: 15 # Количество попыток
+  delay: 10   # Пауза в секундах между попытками (всего ~2.5 минуты)
+  changed_when: false
+  check_mode: false # Эта задача должна выполняться всегда, даже в check-mode

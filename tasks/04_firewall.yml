@@ -1,0 +1,32 @@
+---
+- name: Gather service facts to check for firewall
+  ansible.builtin.service_facts:
+
+- name: Configure firewalld for RHEL/AlmaLinux
+  when:
+    - ansible_os_family == "RedHat"
+    - "'firewalld.service' in ansible_facts.services"
+  block:
+    - name: Open MinIO ports in firewalld
+      ansible.posix.firewalld:
+        port: "{{ item }}/tcp"
+        permanent: true
+        state: enabled
+        immediate: true
+      loop:
+        - "{{ minio_api_port }}"
+        - "{{ minio_console_port }}"
+
+- name: Configure UFW (for Debian/Ubuntu)
+  when:
+    - ansible_os_family == "Debian"
+    - "'ufw.service' in ansible_facts.services"
+  block:
+    - name: Open MinIO ports in UFW
+      community.general.ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - "{{ minio_api_port }}"
+        - "{{ minio_console_port }}"

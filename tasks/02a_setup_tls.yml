@@ -1,0 +1,27 @@
+---
+- name: Настройка TLS для MinIO
+  when: minio_tls_enabled | default(false)
+  block:
+    - name: Проверка наличия файла сертификата
+      ansible.builtin.stat:
+        path: "{{ minio_tls_cert_file }}"
+      delegate_to: localhost
+      run_once: true
+      register: cert_file_stat
+
+    - name: Остановка, если файл сертификата не найден
+      ansible.builtin.fail:
+        msg: "Файл сертификата не найден по пути '{{ minio_tls_cert_file }}'. Проверьте переменную minio_tls_cert_file."
+      when: not cert_file_stat.stat.exists
+
+    - name: Копирование сертификата и ключа на узлы MinIO
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "/etc/minio/certs/{{ item.dest }}"
+        owner: "{{ minio_user }}"
+        group: "{{ minio_group }}"
+        mode: "0600"
+      loop:
+        - { src: "{{ minio_tls_cert_file }}", dest: "public.crt" }
+        - { src: "{{ minio_tls_key_file }}", dest: "private.key" }
+      notify: Restart MinIO

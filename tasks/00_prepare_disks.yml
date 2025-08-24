@@ -1,0 +1,25 @@
+---
+- name: Установка утилит для файловой системы XFS
+  ansible.builtin.package:
+    name: "xfsprogs" # Название пакета одинаковое для Debian/RHEL, упрощаем
+    state: present
+
+- name: Подготовка каждого диска и точки монтирования
+  ansible.builtin.include_tasks: _prepare_single_disk.yml
+  loop: "{{ minio_disk_devices | zip(minio_data_paths) | list }}"
+  loop_control:
+    loop_var: disk_item # Используем loop_var для ясности
+  vars:
+    disk_device: "{{ disk_item[0] }}"
+    data_path: "{{ disk_item[1] }}"
+  when:
+    - minio_disk_devices is defined
+    - minio_disk_devices | length > 0
+    - minio_data_paths is defined
+    - (minio_disk_devices | length) == (minio_data_paths | length)
+  register: disk_prep_result
+
+- name: "Отладка: вывод результатов подготовки дисков"
+  ansible.builtin.debug:
+    var: disk_prep_result
+  when: disk_prep_result.changed

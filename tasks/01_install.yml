@@ -1,0 +1,36 @@
+---
+- name: Create group for MinIO
+  ansible.builtin.group:
+    name: "{{ minio_group }}"
+    state: present
+
+- name: Create user for MinIO
+  ansible.builtin.user:
+    name: "{{ minio_user }}"
+    shell: /sbin/nologin
+    group: "{{ minio_group }}"
+    create_home: no
+
+- name: Install rsync for fast file synchronization
+  ansible.builtin.package:
+    name: 
+      - rsync
+      - sshpass
+    state: present
+
+- name: Download MinIO binary (only on the first host)
+  ansible.builtin.get_url:
+    url: "{{ minio_binary_url }}"
+    dest: "{{ minio_install_path }}/minio"
+    mode: "0755"
+    timeout: 360
+    validate_certs: no
+  when: inventory_hostname == groups['minio_servers'][0]
+
+- name: Copy MinIO binary to other hosts
+  ansible.posix.synchronize:
+    mode: push
+    src: "{{ minio_install_path }}/minio"
+    dest: "{{ minio_install_path }}"
+  delegate_to: "{{ groups['minio_servers'][0] }}"
+  when: inventory_hostname != groups['minio_servers'][0]

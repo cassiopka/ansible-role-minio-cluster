@@ -1,0 +1,45 @@
+---
+minio_enabled: true
+
+minio_arch: "amd64"
+minio_binary_url: "https://dl.min.io/server/minio/release/linux-{{ minio_arch }}/archive/minio"
+
+minio_install_path: "/usr/local/bin"
+
+minio_user: "minio-user"
+minio_group: "minio-group"
+
+# List of block devices to format and mount.
+# Example: [ "/dev/vdb", "/dev/vdc" ]
+minio_disk_devices: []
+
+# For a cluster, list all mount points on each node. All nodes should have the same paths.
+# Example for a cluster with two disks per node: [ "/mnt/data1", "/mnt/data2" ]
+minio_data_paths: [ "/usr/local/share/minio" ]
+
+minio_api_port: 9000
+minio_console_port: 9001
+minio_listen_address: "0.0.0.0"
+
+minio_config_file: "/etc/default/minio"
+
+# IMPORTANT: Change these in production.
+minio_root_user: "minioadmin"
+minio_root_password: "minioadmin_secret_password_change_me"
+
+# TLS/SSL settings
+minio_tls_enabled: false
+minio_tls_cert_dir: "/etc/minio/certs"
+# Paths on the Ansible controller to the certificate and key files to be copied to the nodes.
+minio_tls_cert_file: "" # e.g., "{{ playbook_dir }}/certs/minio.crt"
+minio_tls_key_file: ""  # e.g., "{{ playbook_dir }}/certs/minio.key"
+
+# Caching settings (optional)
+# List of block devices for the cache. Example: [ "/dev/vdf" ]
+minio_cache_devices: []
+# List of paths to mount cache disks. Example: [ "/mnt/cache1" ]
+minio_cache_paths: []
+# Percentage of disk space to use for cache.
+minio_cache_quota: "90"
+# File patterns to exclude from cache. Example: "*.pdf,*.zip"
+minio_cache_exclude: ""

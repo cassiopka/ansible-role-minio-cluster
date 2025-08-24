@@ -1,0 +1,22 @@
+[Unit]
+Description=MinIO
+Documentation=https://docs.min.io
+Wants=network-online.target
+After=network-online.target
+AssertFileIsExecutable={{ minio_install_path }}/minio
+
+[Service]
+WorkingDirectory={{ minio_install_path }}
+
+User={{ minio_user }}
+Group={{ minio_group }}
+
+EnvironmentFile=-{{ minio_config_file }}
+ExecStart={{ minio_install_path }}/minio server $MINIO_OPTS {% for host in groups['minio_servers'] %}{% for path in minio_data_paths %}http://{{ hostvars[host]['ansible_host'] | default(host) }}{{ path }} {% endfor %}{% endfor %}
+
+Restart=always
+LimitNOFILE=65536
+TimeoutStopSec=300
+
+[Install]
+WantedBy=multi-user.target

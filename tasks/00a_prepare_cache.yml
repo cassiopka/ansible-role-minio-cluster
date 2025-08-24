@@ -1,0 +1,14 @@
+---
+- name: Подготовка каждого диска для кэша
+  ansible.builtin.include_tasks: _prepare_single_cache_disk.yml
+  loop: "{{ minio_cache_devices | zip(minio_cache_paths) | list }}"
+  loop_control:
+    loop_var: cache_disk_item
+  vars:
+    cache_disk_device: "{{ cache_disk_item[0] }}"
+    cache_path: "{{ cache_disk_item[1] }}"
+  when:
+    - minio_cache_devices is defined
+    - minio_cache_devices | length > 0
+    - minio_cache_paths is defined
+    - (minio_cache_devices | length) == (minio_cache_paths | length)

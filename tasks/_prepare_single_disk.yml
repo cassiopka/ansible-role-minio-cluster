@@ -1,0 +1,27 @@
+---
+- name: "Форматирование диска {{ disk_device }} в XFS"
+  community.general.filesystem:
+    fstype: xfs
+    dev: "{{ disk_device }}"
+    force: no # Не форматировать, если ФС уже существует
+
+- name: "Создание точки монтирования {{ data_path | dirname }}"
+  ansible.builtin.file:
+    path: "{{ data_path | dirname }}"
+    state: directory
+    mode: "0755"
+
+- name: "Монтирование диска {{ disk_device }} в {{ data_path | dirname }}"
+  ansible.posix.mount:
+    path: "{{ data_path | dirname }}"
+    src: "{{ disk_device }}"
+    fstype: xfs
+    state: mounted # Гарантирует монтирование и запись в /etc/fstab
+
+- name: "Создание директории для данных MinIO внутри точки монтирования"
+  ansible.builtin.file:
+    path: "{{ data_path }}"
+    state: directory
+    owner: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    mode: "0755"
